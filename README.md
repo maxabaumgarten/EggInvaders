@@ -2,6 +2,7 @@
 A python game made in the process of learning Python and Github
 
 Based off the lesson in Chapter 12 of Eric Matthes' Python Crash Course
+
 See: https://ehmatthes.github.io/pcc_2e/regular_index/
 
 In Egg Invaders, the player controls a bird that appears at the bottom of the screen.  The player can move the bird right and left using the arrow keys and shoot bullets using the spacebar.
