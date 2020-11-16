@@ -43,6 +43,8 @@ class EggInvaders:
             self._check_events()
             # Redraw the screen during each pass through the loop.
             self._update_screen()
+            #update ships position on each pass through the loop/
+            self.owl.update()
 
 #helper methods does work inside a class but isn't called through an instance.
     def _check_events(self):
@@ -50,6 +52,20 @@ class EggInvaders:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    #Owl moves right as right key is pressed, setting the method true
+                    self.owl.moving_right = True
+                elif event.key == pygame.K_LEFT:
+                    #Owl moves left as left key is pressed, setting the method true
+                    self.owl.moving_left = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_RIGHT:
+                    #Stop moving the owl to the right, since the right key was released
+                    self.owl.moving_right = False
+                elif event.key == pygame.K_LEFT:
+                    #Stop moving the owl to the left, since the left key was released
+                    self.owl.moving_left = False
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen"""
