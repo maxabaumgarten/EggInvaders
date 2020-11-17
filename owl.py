@@ -26,7 +26,8 @@ class Owl:
         #Movement flag - Default owl behavior is motionless
         self.moving_right = False
         self.moving_left = False
-    
+
+#update manages the ships position
     def update(self):
         """Update the owl's position based on the movement flag."""
         #updates the owl's x value, not the rect
@@ -39,6 +40,7 @@ class Owl:
         #update rect object from self.x
         self.rect.x = self.x
 
+#blitme draws the owl to the screen
     def blitme(self):
         """Draw the Owl at its current location."""
         self.screen.blit(self.image, self.rect)
