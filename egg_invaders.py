@@ -61,6 +61,8 @@ class EggInvaders:
             #Update bullet postion
             #Get rid of bullets that have dissapeared
             self._update_bullets()
+            #update egg position
+            self._update_eggs()
             # Redraw the screen during each pass through the loop.
             self._update_screen()
 
@@ -115,6 +117,14 @@ class EggInvaders:
                 self.bullets.remove(bullet)
         print(len(self.bullets)) #shows # of bullets remaining during each loop in consol
 
+    def _update_eggs(self):
+        """
+        Check if the fleet is at an edge,
+            then update then update the postions of all eggs in the fleet
+        """
+        self._check_fleet_edges()
+        self.eggs.update()
+
     def _create_fleet(self):
         """Create the fleet of eggs."""
         #Create an egg and find the number of eggs ina  row
@@ -126,14 +136,16 @@ class EggInvaders:
         
         #Determine the number of rows of eggs that fit on the screen.
         egg_height = self.owl.rect.height
+        #calc the avail space, find vertical space by subtracting the egg height from the top of the game 
+        # and the owl height from the bottom + 2 egg heights from bottom
         available_space_y = (self.settings.screen_height -
                                 (3 * egg_height) - egg_height)
         number_rows = available_space_y // (2 * egg_height)
 
         #create the full fleet of eggs.
-        for row_number in range(number_rows):
-            for egg_number in range(number_eggs_x):
-                self._create_egg(egg_number, row_number)
+        for row_number in range(number_rows): # creates number of rows we want
+            for egg_number in range(number_eggs_x): #creates the eggs in one row
+                self._create_egg(egg_number, row_number) # creates an egg per number of eggs per row
         
     def _create_egg(self, egg_number, row_number):
         """Create an egg and place it in the row"""
@@ -145,6 +157,20 @@ class EggInvaders:
         egg.rect.x = egg.x
         egg.rect.y = egg.rect.height + 2 * egg.rect.height * row_number
         self.eggs.add(egg)
+    
+    def _check_fleet_edges(self):
+        """Respond appropriately if any eggs have reached an edge."""
+        for egg in self.eggs.sprites():
+            if egg.check_edges():
+                self._change_fleet_direction()
+                break
+        
+    def _change_fleet_direction(self):
+        """Drop the entire fleet and change the fleet's direction."""
+        for egg in self.eggs.sprites():
+            egg.rect.y =+ self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
+            
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen"""
