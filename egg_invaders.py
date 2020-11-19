@@ -93,7 +93,7 @@ class EggInvaders:
     def _check_keyup_events(self, event):
         """Respond to key releases"""
         if event.key == pygame.K_RIGHT:
-            #Stop moving the owl to the right, since the right key was released
+            #Stop moving the owl to the right, since the right key was released+
             self.owl.moving_right = False
         elif event.key == pygame.K_LEFT:
             #Stop moving the owl to the left, since the left key was released
@@ -115,7 +115,19 @@ class EggInvaders:
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
-        print(len(self.bullets)) #shows # of bullets remaining during each loop in consol
+        
+        self._check_bullet_alien_collisions()
+
+    def _check_bullet_alien_collisions(self):
+        """Respond to bullet-egg collisions"""
+        #remove any bullets that have collided
+        collisions = pygame.sprite.groupcollide(
+                self.bullets, self.eggs, True, True)
+        
+        if not self.eggs:
+            #Destroy existing bullets and create new fleet.
+            self.bullets.empty()
+            self._create_fleet()
 
     def _update_eggs(self):
         """
@@ -135,11 +147,11 @@ class EggInvaders:
         number_eggs_x = available_space_x // (2 * egg_width) #calcs number of eggs in row
         
         #Determine the number of rows of eggs that fit on the screen.
-        egg_height = self.owl.rect.height
+        owl_height = self.owl.rect.height
         #calc the avail space, find vertical space by subtracting the egg height from the top of the game 
         # and the owl height from the bottom + 2 egg heights from bottom
         available_space_y = (self.settings.screen_height -
-                                (3 * egg_height) - egg_height)
+                                (3 * egg_height) - owl_height)
         number_rows = available_space_y // (2 * egg_height)
 
         #create the full fleet of eggs.
@@ -168,7 +180,7 @@ class EggInvaders:
     def _change_fleet_direction(self):
         """Drop the entire fleet and change the fleet's direction."""
         for egg in self.eggs.sprites():
-            egg.rect.y =+ self.settings.fleet_drop_speed
+            egg.rect.y += self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
             
 

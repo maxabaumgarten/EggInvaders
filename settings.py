@@ -12,8 +12,8 @@ class Settings:
         self.owl_speed = 1.5
 
         #Bullet settings
-        self.bullet_speed = 1.0
-        self.bullet_width = 3
+        self.bullet_speed = 1.5
+        self.bullet_width = 3000 #default = 3, use 300+ for testing
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 3
