@@ -13,3 +13,11 @@ If any egg hits the player's bird or reaches the bottom of the screen, the playe
 
 # Requirements:
 Install PyGame - python -m pip install  --user pygame
+
+#How to play
+- Move the owl using Left and Right arrow keys.
+- Shoot the incoming eggs by pressing Spacebar
+- Eliminate all the eggs before they hit the Owl
+- You have 3 Lives.
+- The speed increases each time you clear the eggs.
+- Press Q to quit.
