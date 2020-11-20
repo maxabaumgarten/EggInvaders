@@ -1,19 +1,19 @@
-#Python module used to exit the game
 import sys
 
-#Python module used to create and make the game functional
+from time import sleep
+
 import pygame
 
-#import settings module which allows for simpler settings modifications
 from settings import Settings
 
-#import owl module
+from game_stats import GameStats
+
+from button import Button
+
 from owl import Owl
 
-#import bullet module
 from bullet import Bullet
 
-#import egg module
 from egg import Egg
 
 
@@ -38,14 +38,17 @@ class EggInvaders:
             (self.settings.screen_width, self.settings.screen_height))
         
         pygame.display.set_caption("Egg Invaders")
+        self.stats = GameStats(self)
 
         #make an instance of the owl w/ required argument which is the instance EggInvaders
         #This gives access the Owl access to game resources
         self.owl = Owl(self)
         self.bullets = pygame.sprite.Group()
         self.eggs = pygame.sprite.Group()
-
         self._create_fleet()
+
+        #Make the play button
+        self.play_button = Button(self, "Play")
 
         #set the background color using Settings module
         self.bg_color = (self.settings.bg_color)
@@ -56,13 +59,15 @@ class EggInvaders:
 
         while True:
             self._check_events()
-            #update ships position on each pass through the loop
-            self.owl.update()
-            #Update bullet postion
-            #Get rid of bullets that have dissapeared
-            self._update_bullets()
-            #update egg position
-            self._update_eggs()
+
+            if self.stats.game_active:
+                #update ships position on each pass through the loop
+                self.owl.update()
+                #Update bullet postion
+                self._update_bullets()
+                #update egg position
+                self._update_eggs()
+
             # Redraw the screen during each pass through the loop.
             self._update_screen()
 
@@ -72,11 +77,35 @@ class EggInvaders:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
     
+    def _check_play_button(self, mouse_pos):
+        """Start a new game what the player clicks play."""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.stats.game_active:
+            # Reset the game settings
+            self.settings.initialize_dynamic_settings()
+            #reset the game statistics
+            self.stats.reset_stats()
+            self.stats.game_active = True
+
+            #get rid of any remaining eggs and bullets
+            self.eggs.empty()
+            self.bullets.empty()
+
+            #create a new fleet and center the ship
+            self._create_fleet()
+            self.owl.center_owl()
+
+            #hide the mouse cursor
+            pygame.mouse.set_visible(False)
+
     def _check_keydown_events(self, event):
         """Respond to key press"""
         if event.key == pygame.K_RIGHT:
@@ -115,7 +144,20 @@ class EggInvaders:
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
-        print(len(self.bullets)) #shows # of bullets remaining during each loop in consol
+        
+        self._check_bullet_owl_collisions()
+
+    def _check_bullet_owl_collisions(self):
+        """Respond to bullet-egg collisions"""
+        #remove any bullets that have collided
+        collisions = pygame.sprite.groupcollide(
+                self.bullets, self.eggs, True, True)
+        
+        if not self.eggs:
+            #Destroy existing bullets and create new fleet.
+            self.bullets.empty()
+            self._create_fleet()
+            self.settings.increase_speed()
 
     def _update_eggs(self):
         """
@@ -124,6 +166,13 @@ class EggInvaders:
         """
         self._check_fleet_edges()
         self.eggs.update()
+        
+        #Look for egg-owl collisions
+        if pygame.sprite.spritecollideany(self.owl, self.eggs):
+            self._owl_hit()
+        
+        #Look for eggs hitting the bottom of the screen
+        self._check_eggs_bottom()
 
     def _create_fleet(self):
         """Create the fleet of eggs."""
@@ -135,11 +184,11 @@ class EggInvaders:
         number_eggs_x = available_space_x // (2 * egg_width) #calcs number of eggs in row
         
         #Determine the number of rows of eggs that fit on the screen.
-        egg_height = self.owl.rect.height
+        owl_height = self.owl.rect.height
         #calc the avail space, find vertical space by subtracting the egg height from the top of the game 
         # and the owl height from the bottom + 2 egg heights from bottom
         available_space_y = (self.settings.screen_height -
-                                (3 * egg_height) - egg_height)
+                                (3 * egg_height) - owl_height)
         number_rows = available_space_y // (2 * egg_height)
 
         #create the full fleet of eggs.
@@ -168,9 +217,35 @@ class EggInvaders:
     def _change_fleet_direction(self):
         """Drop the entire fleet and change the fleet's direction."""
         for egg in self.eggs.sprites():
-            egg.rect.y =+ self.settings.fleet_drop_speed
+            egg.rect.y += self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
             
+    def _owl_hit(self):
+        """Respond to the owl being hit by an egg."""
+        if self.stats.owls_left > 0:
+            #Decrement owls_left.
+            self.stats.owls_left -= 1
+            #Get rid of any remaining eggs and bullets
+            self.eggs.empty()
+            self.bullets.empty()
+            #create a new fleet and center the owl.
+            self._create_fleet()
+            self.owl.center_owl()
+            # Pause.
+            sleep(0.5)
+        else:
+            self.stats.game_active = False
+            pygame.mouse.set_visible(True)
+    
+    def _check_eggs_bottom(self):
+        """Check if any eggs have reached the bottom of the screen."""
+        screen_rect = self.screen.get_rect()
+        for egg in self.eggs.sprites():
+            if egg.rect.bottom >= screen_rect.bottom:
+                #Treat this the same as if the owl got hit
+                self._owl_hit
+                break
+
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen"""
@@ -184,6 +259,10 @@ class EggInvaders:
             bullet.draw_bullet()
         
         self.eggs.draw(self.screen)
+
+        #Draw the play button if the game is inactive
+        if not self.stats.game_active:
+            self.play_button.draw_button()
 
         #Make the most recently drawn screen visible.
         pygame.display.flip()
