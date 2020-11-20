@@ -1,19 +1,16 @@
-#Python module used to exit the game
 import sys
+from time import sleep
 
-#Python module used to create and make the game functional
 import pygame
 
-#import settings module which allows for simpler settings modifications
 from settings import Settings
 
-#import owl module
+from game_stats import GameStats
+
 from owl import Owl
 
-#import bullet module
 from bullet import Bullet
 
-#import egg module
 from egg import Egg
 
 
@@ -38,6 +35,7 @@ class EggInvaders:
             (self.settings.screen_width, self.settings.screen_height))
         
         pygame.display.set_caption("Egg Invaders")
+        self.stats = GameStats(self)
 
         #make an instance of the owl w/ required argument which is the instance EggInvaders
         #This gives access the Owl access to game resources
@@ -56,13 +54,15 @@ class EggInvaders:
 
         while True:
             self._check_events()
-            #update ships position on each pass through the loop
-            self.owl.update()
-            #Update bullet postion
-            #Get rid of bullets that have dissapeared
-            self._update_bullets()
-            #update egg position
-            self._update_eggs()
+
+            if self.stats.game_active:
+                #update ships position on each pass through the loop
+                self.owl.update()
+                #Update bullet postion
+                self._update_bullets()
+                #update egg position
+                self._update_eggs()
+                
             # Redraw the screen during each pass through the loop.
             self._update_screen()
 
@@ -136,6 +136,13 @@ class EggInvaders:
         """
         self._check_fleet_edges()
         self.eggs.update()
+        
+        #Look for egg-owl collisions
+        if pygame.sprite.spritecollideany(self.owl, self.eggs):
+            self._owl_hit()
+        
+        #Look for eggs hitting the bottom of the screen
+        self._check_eggs_bottom()
 
     def _create_fleet(self):
         """Create the fleet of eggs."""
@@ -183,6 +190,31 @@ class EggInvaders:
             egg.rect.y += self.settings.fleet_drop_speed
         self.settings.fleet_direction *= -1
             
+    def _owl_hit(self):
+        """Respond to the owl being hit by an egg."""
+        if self.stats.owls_left > 0:
+            #Decrement owls_left.
+            self.stats.owls_left -= 1
+            #Get rid of any remaining eggs and bullets
+            self.eggs.empty()
+            self.bullets.empty()
+            #create a new fleet and center the owl.
+            self._create_fleet()
+            self.owl.center_owl()
+            # Pause.
+            sleep(0.5)
+        else:
+            self.stats.game_active = False
+    
+    def _check_eggs_bottom(self):
+        """Check if any eggs have reached the bottom of the screen."""
+        screen_rect = self.screen.get_rect()
+        for egg in self.eggs.sprites():
+            if egg.rect.bottom >= screen_rect.bottom:
+                #Treat this the same as if the owl got hit
+                self._owl_hit
+                break
+
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen"""

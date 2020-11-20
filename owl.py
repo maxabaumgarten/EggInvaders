@@ -40,7 +40,12 @@ class Owl:
         #update rect object from self.x
         self.rect.x = self.x
 
-#blitme draws the owl to the screen
+    #blitme draws the owl to the screen
     def blitme(self):
         """Draw the Owl at its current location."""
         self.screen.blit(self.image, self.rect)
+    
+    def center_owl(self):
+        """Center the owl on the screen."""
+        self.rect.midbottom = self.screen_rect.midbottom
+        self.x - float(self.rect.x)
