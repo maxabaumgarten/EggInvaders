@@ -1,4 +1,5 @@
 import sys
+
 from time import sleep
 
 import pygame
@@ -6,6 +7,8 @@ import pygame
 from settings import Settings
 
 from game_stats import GameStats
+
+from button import Button
 
 from owl import Owl
 
@@ -42,8 +45,10 @@ class EggInvaders:
         self.owl = Owl(self)
         self.bullets = pygame.sprite.Group()
         self.eggs = pygame.sprite.Group()
-
         self._create_fleet()
+
+        #Make the play button
+        self.play_button = Button(self, "Play")
 
         #set the background color using Settings module
         self.bg_color = (self.settings.bg_color)
@@ -62,7 +67,7 @@ class EggInvaders:
                 self._update_bullets()
                 #update egg position
                 self._update_eggs()
-                
+
             # Redraw the screen during each pass through the loop.
             self._update_screen()
 
@@ -72,11 +77,35 @@ class EggInvaders:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
     
+    def _check_play_button(self, mouse_pos):
+        """Start a new game what the player clicks play."""
+        button_clicked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_clicked and not self.stats.game_active:
+            # Reset the game settings
+            self.settings.initialize_dynamic_settings()
+            #reset the game statistics
+            self.stats.reset_stats()
+            self.stats.game_active = True
+
+            #get rid of any remaining eggs and bullets
+            self.eggs.empty()
+            self.bullets.empty()
+
+            #create a new fleet and center the ship
+            self._create_fleet()
+            self.owl.center_owl()
+
+            #hide the mouse cursor
+            pygame.mouse.set_visible(False)
+
     def _check_keydown_events(self, event):
         """Respond to key press"""
         if event.key == pygame.K_RIGHT:
@@ -93,7 +122,7 @@ class EggInvaders:
     def _check_keyup_events(self, event):
         """Respond to key releases"""
         if event.key == pygame.K_RIGHT:
-            #Stop moving the owl to the right, since the right key was released+
+            #Stop moving the owl to the right, since the right key was released
             self.owl.moving_right = False
         elif event.key == pygame.K_LEFT:
             #Stop moving the owl to the left, since the left key was released
@@ -116,9 +145,9 @@ class EggInvaders:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         
-        self._check_bullet_alien_collisions()
+        self._check_bullet_owl_collisions()
 
-    def _check_bullet_alien_collisions(self):
+    def _check_bullet_owl_collisions(self):
         """Respond to bullet-egg collisions"""
         #remove any bullets that have collided
         collisions = pygame.sprite.groupcollide(
@@ -128,6 +157,7 @@ class EggInvaders:
             #Destroy existing bullets and create new fleet.
             self.bullets.empty()
             self._create_fleet()
+            self.settings.increase_speed()
 
     def _update_eggs(self):
         """
@@ -205,6 +235,7 @@ class EggInvaders:
             sleep(0.5)
         else:
             self.stats.game_active = False
+            pygame.mouse.set_visible(True)
     
     def _check_eggs_bottom(self):
         """Check if any eggs have reached the bottom of the screen."""
@@ -228,6 +259,10 @@ class EggInvaders:
             bullet.draw_bullet()
         
         self.eggs.draw(self.screen)
+
+        #Draw the play button if the game is inactive
+        if not self.stats.game_active:
+            self.play_button.draw_button()
 
         #Make the most recently drawn screen visible.
         pygame.display.flip()

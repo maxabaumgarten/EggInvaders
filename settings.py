@@ -21,6 +21,24 @@ class Settings:
 
         #Egg settings
         self.egg_speed = 1.0
-        self.fleet_drop_speed = 10
+        self.fleet_drop_speed = 5 #default was 10
+
+        #How quickly the game speeds up
+        self.speedup_scale = 1.1
+
+        self.initialize_dynamic_settings()
+
+    def initialize_dynamic_settings(self):
+        """Initialize settings that change throughout the game"""
+        self.owl_speed = 1.5
+        self.bullet_speed = 3.0
+        self.egg_speed = 1.0
+
         # fleet direction of 1 represtents right; -1 represents left
         self.fleet_direction = 1
+    
+    def increase_speed(self):
+        """Increase speed settings."""
+        self.owl_speed *= self.speedup_scale
+        self.bullet_speed *= self.speedup_scale
+        self.egg_speed *= self.speedup_scale
