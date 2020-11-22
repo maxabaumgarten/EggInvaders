@@ -14,14 +14,14 @@ class Settings:
 
         #Bullet settings
         self.bullet_speed = 1.5
-        self.bullet_width = 3000  #default = 3, use 300+ for testing
+        self.bullet_width = 3  #default = 3, use 300+ for testing
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 3
 
         #Egg settings
         self.egg_speed = 1.0
-        self.fleet_drop_speed = 5 #default was 10
+        self.fleet_drop_speed = 10 #default was 10
 
         #How quickly the game speeds up
         self.speedup_scale = 1.1
