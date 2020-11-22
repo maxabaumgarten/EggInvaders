@@ -8,6 +8,8 @@ from settings import Settings
 
 from game_stats import GameStats
 
+from scoreboard import Scoreboard
+
 from button import Button
 
 from owl import Owl
@@ -38,7 +40,9 @@ class EggInvaders:
             (self.settings.screen_width, self.settings.screen_height))
         
         pygame.display.set_caption("Egg Invaders")
+        #Create an instance to store game stats and create scoreboard
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
 
         #make an instance of the owl w/ required argument which is the instance EggInvaders
         #This gives access the Owl access to game resources
@@ -61,7 +65,7 @@ class EggInvaders:
             self._check_events()
 
             if self.stats.game_active:
-                #update ships position on each pass through the loop
+                #update owls position on each pass through the loop
                 self.owl.update()
                 #Update bullet postion
                 self._update_bullets()
@@ -94,12 +98,15 @@ class EggInvaders:
             #reset the game statistics
             self.stats.reset_stats()
             self.stats.game_active = True
+            self.sb.prep_score()
+            self.sb.prep_level()
+            self.sb.prep_owls()
 
             #get rid of any remaining eggs and bullets
             self.eggs.empty()
             self.bullets.empty()
 
-            #create a new fleet and center the ship
+            #create a new fleet and center the owl
             self._create_fleet()
             self.owl.center_owl()
 
@@ -153,11 +160,21 @@ class EggInvaders:
         collisions = pygame.sprite.groupcollide(
                 self.bullets, self.eggs, True, True)
         
+        if collisions:
+            for eggs in collisions.values():
+                self.stats.score += self.settings.egg_points * len(eggs)
+            self.sb.prep_score()
+            self.sb.check_high_score()
+        
         if not self.eggs:
             #Destroy existing bullets and create new fleet.
             self.bullets.empty()
             self._create_fleet()
             self.settings.increase_speed()
+
+            #increse level
+            self.stats.level += 1
+            self.sb.prep_level()
 
     def _update_eggs(self):
         """
@@ -225,6 +242,7 @@ class EggInvaders:
         if self.stats.owls_left > 0:
             #Decrement owls_left.
             self.stats.owls_left -= 1
+            self.sb.prep_owls()
             #Get rid of any remaining eggs and bullets
             self.eggs.empty()
             self.bullets.empty()
@@ -259,6 +277,9 @@ class EggInvaders:
             bullet.draw_bullet()
         
         self.eggs.draw(self.screen)
+
+        #Draw the score information.
+        self.sb.show_score()
 
         #Draw the play button if the game is inactive
         if not self.stats.game_active:

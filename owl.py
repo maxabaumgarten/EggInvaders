@@ -1,11 +1,13 @@
 import pygame
 
-class Owl:
+from pygame.sprite import Sprite
+
+class Owl(Sprite):
     """A class to manage the Owl"""
 
     def __init__(self, ei_game):
         """Initialize the owl and set its starting position"""
-        #
+        super().__init__()
         self.screen = ei_game.screen
         self.settings = ei_game.settings
 
@@ -19,7 +21,7 @@ class Owl:
         #Start each new owl at the bottom center of the screen
         self.rect.midbottom = self.screen_rect.midbottom
 
-        #Store a decimal value for the ship"s horizontal position.
+        #Store a decimal value for the owls"s horizontal position.
         #this is done in order to hold floats, because rect only does integer
         self.x = float(self.rect.x)
 
@@ -27,7 +29,7 @@ class Owl:
         self.moving_right = False
         self.moving_left = False
 
-#update manages the ships position
+#update manages the owls position
     def update(self):
         """Update the owl's position based on the movement flag."""
         #updates the owl's x value, not the rect
