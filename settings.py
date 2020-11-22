@@ -21,7 +21,7 @@ class Settings:
 
         #Egg settings
         self.egg_speed = 1.0
-        self.fleet_drop_speed = 10 #default was 10
+        self.fleet_drop_speed = 5 #default was 10
 
         #How quickly the game speeds up
         self.speedup_scale = 1.1
