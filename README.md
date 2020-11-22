@@ -21,3 +21,7 @@ Install PyGame - python -m pip install  --user pygame
 - You have 3 Lives.
 - The speed increases each time you clear the eggs.
 - Press Q to quit.
+
+#FYI
+- The speed may seem wildy different on Mac vs Windows.
+- There are many bugs.
