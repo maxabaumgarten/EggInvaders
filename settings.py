@@ -9,7 +9,7 @@ class Settings:
         self.bg_color = (255, 255, 255)
         
         #Owl settings
-        self.owl_speed = 1.5
+        self.owl_speed = 1
         self.owl_limit = 3
 
         #Bullet settings
@@ -17,11 +17,11 @@ class Settings:
         self.bullet_width = 3  #default = 3, use 300+ for testing
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
-        self.bullets_allowed = 3
+        self.bullets_allowed = 5
 
         #Egg settings
-        self.egg_speed = 1.0
-        self.fleet_drop_speed = 5 #default was 10
+        self.egg_speed = .7
+        self.fleet_drop_speed = 3 #default was 10
 
         #How quickly the game speeds up
         self.speedup_scale = 1.1
